@@ -58,6 +58,21 @@ public class Cliente {
         }
     }
 
+    //altera o nome
+    protected void changeName (String newNome){
+        this.nomePessoa = newNome;
+    }
+
+    //altera a cidade
+    protected void changeCity (String newCity){
+        this.cidade = newCity;
+    }
+
+    //altera a senha
+    protected void changeSenha (String newSenha){
+        this.senha = newSenha;
+    } 
+
     //converte os valores da classe em byteArray
     public byte[] toByteArray() throws IOException{
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -97,6 +112,20 @@ public class Cliente {
         this.saldo = dis.readFloat();
     }
 
+    //retorna o valor de id da classe
+    protected int getID(){
+        return this.idConta;
+    }
+
+    //retorna o nome do usuario para checar se é valido
+    protected String getUsername(){
+        return this.nomeUsuario;
+    }
+
+    protected void deprecate(){
+        this.idConta = -1;
+    }
+
     //retorna os dados do cliente(exceto a senha e o CPF)
     protected String getCliente(){
         String resp = "ID: "+this.idConta+"\n"+ "Nome: "+this.nomePessoa+"\n"+  "Username: "+this.nomeUsuario+"\n"+ "Email: "+this.email[0];
@@ -106,7 +135,7 @@ public class Cliente {
             }
         }
         resp+="Cidade: "+this.cidade + "\n"+"Numero de Transf.: "+this.numTransferencias + "\n" + "Saldo: "+ this.saldo + "\n";
-        
+
         return resp;
     }
 }
