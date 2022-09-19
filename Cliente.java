@@ -1,3 +1,9 @@
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.DataOutputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+
 public class Cliente {
     //Declaracao de variaveis
     private int idConta;
@@ -10,6 +16,8 @@ public class Cliente {
     private int numTransferencias;
     private float saldo;
 
+    private int emailCount;
+
     //Construtor primario
     protected Cliente(){
         this.idConta = 0;
@@ -21,6 +29,8 @@ public class Cliente {
         this.cidade="";
         this.numTransferencias=0;
         this.saldo=0;
+
+        this.emailCount = 0;
     }
 
     //Construtor secundario
@@ -29,6 +39,7 @@ public class Cliente {
         this.nomePessoa= nomePessoa;
         this.email=new String[10];
         this.email[0]= email;
+        this.emailCount = 1;
         this.nomeUsuario = nomeUsuario;
         this.senha= senha;
         this.cpf= cpf;
@@ -37,5 +48,65 @@ public class Cliente {
         this.saldo= saldo;
     }
 
-    protected
+    //adiciona um novo email na lista de emails
+    protected void addEmail(String email) throws RuntimeException{
+        if(this.emailCount <11){
+            this.email[this.emailCount] = email;
+            this.emailCount++;
+        }else{
+            throw new RuntimeException("NUMERO MAXIMO DE EMAILS ATINGIDO!");
+        }
+    }
+
+    //converte os valores da classe em byteArray
+    public byte[] toByteArray() throws IOException{
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(baos);
+        dos.writeInt(this.idConta);
+        dos.writeUTF(this.nomePessoa);
+        dos.writeInt(this.emailCount);
+        for(int i=0;i<this.emailCount;i++){
+            dos.writeUTF(this.email[i]);
+        }
+        dos.writeUTF(this.nomeUsuario);
+        dos.writeUTF(this.senha);
+        dos.writeUTF(this.cpf);
+        dos.writeUTF(this.cidade);
+        dos.writeInt(this.numTransferencias);
+        dos.writeFloat(this.saldo);
+
+        return baos.toByteArray();
+    }
+
+    //converte os valores do byteArray para os valores dentro da classe
+    public void fromByteArray(byte ba[]) throws IOException{
+        ByteArrayInputStream bais = new ByteArrayInputStream(ba);
+        DataInputStream dis = new DataInputStream(bais);
+
+        this.idConta = dis.readInt();
+        this.nomePessoa = dis.readUTF();
+        this.emailCount = dis.readInt();
+        for(int i=0;i<this.emailCount;i++){
+            this.email[i]=dis.readUTF();
+        }
+        this.nomeUsuario = dis.readUTF();
+        this.senha = dis.readUTF();
+        this.cpf = dis.readUTF();
+        this.cidade = dis.readUTF();
+        this.numTransferencias = dis.readInt();
+        this.saldo = dis.readFloat();
+    }
+
+    //retorna os dados do cliente(exceto a senha e o CPF)
+    protected String getCliente(){
+        String resp = "ID: "+this.idConta+"\n"+ "Nome: "+this.nomePessoa+"\n"+  "Username: "+this.nomeUsuario+"\n"+ "Email: "+this.email[0];
+        if(this.emailCount>1){
+            for(int i=1;i<=this.emailCount;i++){
+                resp+="     "+this.email[i]+"\n";
+            }
+        }
+        resp+="Cidade: "+this.cidade + "\n"+"Numero de Transf.: "+this.numTransferencias + "\n" + "Saldo: "+ this.saldo + "\n";
+        
+        return resp;
+    }
 }
