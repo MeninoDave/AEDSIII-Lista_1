@@ -122,6 +122,12 @@ public class Cliente {
         return this.nomeUsuario;
     }
 
+    //retorna o saldo do cliente
+    protected float getSaldo(){
+        return this.saldo;
+    }
+
+    //lapide
     protected void deprecate(){
         this.idConta = -1;
     }
@@ -137,5 +143,17 @@ public class Cliente {
         resp+="Cidade: "+this.cidade + "\n"+"Numero de Transf.: "+this.numTransferencias + "\n" + "Saldo: "+ this.saldo + "\n";
 
         return resp;
+    }
+
+    //Recebe uma quantia e atualiza o numero de transferencias
+    protected void Recebe(float valor){
+        this.saldo+=valor;
+        this.numTransferencias++;
+    }
+
+    //Envia uma quania e atualiza o numero de transferencias
+    protected void Envia(float valor){
+        this.saldo = saldo-valor;
+        this.numTransferencias++;
     }
 }

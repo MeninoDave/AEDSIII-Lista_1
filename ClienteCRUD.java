@@ -23,12 +23,13 @@ public class ClienteCRUD extends Cliente{
                 cliente.fromByteArray(ba);
 
                 if(id==cliente.getID()){
+                    raf.close();
                     return cliente;
                 }else{
                     pointer += tam;
                 }
-
             }
+            raf.close();
         }catch(IOException e){
             System.out.println("ERRO AO FAZER BUSCA DE ID! "+e.getMessage());
         }
@@ -50,12 +51,14 @@ public class ClienteCRUD extends Cliente{
                 cliente.fromByteArray(ba);
 
                 if(id==cliente.getID()){
+                    raf.close();
                     return pointer;
                 }else{
                     pointer += tam;
                 }
 
             }
+            raf.close();
         }catch(IOException e){
             System.out.println("ERRO AO FAZER BUSCA DE PONTEIRO! "+e.getMessage());
         }
@@ -83,12 +86,14 @@ public class ClienteCRUD extends Cliente{
                 cliente.fromByteArray(ba);
 
                 if(username==cliente.getUsername()){
+                    raf.close();
                     return false;
                 }else{
                     pointer = tam+4;
                 }
 
             }
+            raf.close();
         }catch(IOException e){
             System.out.println("ERRO AO FAZER BUSCA DE USERNAME! "+e.getMessage());
         }
@@ -180,6 +185,37 @@ public class ClienteCRUD extends Cliente{
         }
     }
 
+    private static void updateEmArquivo(Cliente c)throws IOException{
+        byte[] ba = c.toByteArray();
+        RandomAccessFile raf = new RandomAccessFile(localizacaoDoArquivo, "rw");
+        raf.seek(seekPointer(c.getID()));
+        raf.write(ba);
+        raf.close();
+        
+    }
+
     //envia um valor presente no saldo dentro de um cliente para outro
-    public static void transferencia (int idQuemEnvia, int idQuemRecebe)throws RuntimeException{}
+    public static void transferencia (int idQuemEnvia, int idQuemRecebe)throws RuntimeException,IOException {
+        Cliente remetente = seekCliente(idQuemEnvia);
+        Cliente destinatario = seekCliente(idQuemRecebe);
+        if(remetente==null){
+            throw new RuntimeException("REMETENTE NAO ENCONTRADO!");
+        }else if(destinatario==null){
+            throw new RuntimeException("DESTINATARIO NAO ENCONTRADO!");
+        }else{
+            Scanner sc = new Scanner(System.in);
+            System.out.println("Digite o valor a ser transferido");
+            float valor = sc.nextFloat();
+            sc.close();
+            if(valor>remetente.getSaldo()){
+                throw new RuntimeException("SALDO INSUFICIENTE PARA REALIZAR A OPERACAO");
+            }else{
+                remetente.Envia(valor);
+                destinatario.Recebe(valor);
+                System.out.println("Salvando os dados...");
+                updateEmArquivo(remetente);
+                updateEmArquivo(destinatario);
+            }
+        }
+    }
 }
