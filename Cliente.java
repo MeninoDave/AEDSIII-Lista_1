@@ -1,8 +1,9 @@
 import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
+//import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
-import java.io.DataInputStream;
+//import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 
 public class Cliente {
     //Declaracao de variaveis
@@ -93,6 +94,25 @@ public class Cliente {
         return baos.toByteArray();
     }
 
+    //Obtem os valores atraves do RandomAccessFile
+    public void fromRAF(RandomAccessFile raf)throws IOException{
+        this.idConta = raf.readInt();
+        this.nomePessoa = raf.readUTF();
+        this.emailCount = raf.readInt();
+        for(int i=0;i<this.emailCount;i++){
+            this.email[i]=raf.readUTF();
+        }
+        this.nomeUsuario = raf.readUTF();
+        this.senha = raf.readUTF();
+        this.cpf = raf.readUTF();
+        this.cidade = raf.readUTF();
+        this.numTransferencias = raf.readInt();
+        this.saldo = raf.readFloat();
+    }
+    /*
+    Comentei esse trecho de codigo pois nao estava conseguindo fazer a pesquisa através desse metodo,
+    entao acabei realizando a pesquisa sequencial via RandomAccessFile.  
+    
     //converte os valores do byteArray para os valores dentro da classe
     public void fromByteArray(byte ba[]) throws IOException{
         ByteArrayInputStream bais = new ByteArrayInputStream(ba);
@@ -111,6 +131,7 @@ public class Cliente {
         this.numTransferencias = dis.readInt();
         this.saldo = dis.readFloat();
     }
+    */
 
     //retorna o valor de id da classe
     protected int getID(){
@@ -127,14 +148,24 @@ public class Cliente {
         return this.saldo;
     }
 
+    //retorna o numero de emails presentes na conta
+    protected int getEmailCount(){
+        return this.emailCount;
+    }
+
     //lapide
     protected void deprecate(){
         this.idConta = -1;
     }
 
+    //altera o email de acordo com a posiçao onde esta
+    protected void changeEmail(int pos, String email){
+        this.email[pos] = email;
+    }
+
     //retorna os dados do cliente(exceto a senha e o CPF)
     protected String getCliente(){
-        String resp = "ID: "+this.idConta+"\n"+ "Nome: "+this.nomePessoa+"\n"+  "Username: "+this.nomeUsuario+"\n"+ "Email: "+this.email[0];
+        String resp = "ID: "+this.idConta+"\n"+ "Nome: "+this.nomePessoa+"\n"+  "Username: "+this.nomeUsuario+"\n"+ "Email: "+this.email[0]+"\n";
         if(this.emailCount>1){
             for(int i=1;i<=this.emailCount;i++){
                 resp+="     "+this.email[i]+"\n";
@@ -143,6 +174,15 @@ public class Cliente {
         resp+="Cidade: "+this.cidade + "\n"+"Numero de Transf.: "+this.numTransferencias + "\n" + "Saldo: "+ this.saldo + "\n";
 
         return resp;
+    }
+
+    //Lista todos os emails do cliente selecionado
+    protected String listaEmails(){
+        String lista="";
+        for(int i=0;i<emailCount;i++){
+            lista += i+"- "+this.email[i]+"\n";
+        }
+        return lista;
     }
 
     //Recebe uma quantia e atualiza o numero de transferencias
