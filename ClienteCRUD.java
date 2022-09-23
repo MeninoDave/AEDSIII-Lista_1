@@ -7,6 +7,11 @@ public class ClienteCRUD extends Cliente{
     //ALTERE A LINHA ABAIXO PARA MUDAR A LOCALIZACAO DO ARQUIVO
     private static String localizacaoDoArquivo = "clientes.db";
 
+    //retorna a localizacao do arquivo de clientes
+    public static String getLocalizacao(){
+        return localizacaoDoArquivo;
+    }
+
     //Busca a existencia do cliente dentro do arquivo (Busca sequencial, logo O(n))  
     private static Cliente seekCliente(int id)throws IOException{ 
         RandomAccessFile raf = new RandomAccessFile(localizacaoDoArquivo, "rw");
@@ -126,6 +131,7 @@ public class ClienteCRUD extends Cliente{
                 newcl.addEmail(novoEmail);
             }
             updateEmArquivo(oldcl, newcl);
+            //Intercalacao.IBC();
         }catch(IOException e){
             System.out.println("ERRO AO ATUALIZAR OS DADOS! "+ e.getMessage());
         }
@@ -140,9 +146,11 @@ public class ClienteCRUD extends Cliente{
             raf.writeInt(ba.length);
             raf.write(ba);
             raf.close();
+            Intercalacao.IBC();
         }else{
             antigo.deprecate();
             createEmArquivo(novo);
+            //Intercalacao.IBC();
         }
     }
 
@@ -153,6 +161,7 @@ public class ClienteCRUD extends Cliente{
         raf.writeInt(ba.length);
         raf.write(ba);
         raf.close();
+        //Intercalacao.IBC();
         
     }
 
@@ -173,6 +182,7 @@ public class ClienteCRUD extends Cliente{
                 System.out.println("Salvando os dados...");
                 updateEmArquivo(remetente);
                 updateEmArquivo(destinatario);
+                //Intercalacao.IBC();
             }
         }
     }
