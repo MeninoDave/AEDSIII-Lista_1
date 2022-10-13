@@ -15,7 +15,6 @@ public class Intercalacao extends Cliente {
             long ponteiroAtual = 0;
             while(ponteiroAtual<raf.length()){
                 ponteiroAtual=raf.getFilePointer();
-                int tam = raf.readInt();
                 //System.out.println(tam);
                 Cliente cliente = new Cliente();
                 cliente.fromRAF(raf);
@@ -45,17 +44,6 @@ public class Intercalacao extends Cliente {
         
     }
 
-    //adiciona um  vetor de registros dentro de um arquivo
-    private static void putRegister(Cliente[] c, String filename) throws IOException{ 
-        try{
-            for(int i=0;i< c.length ;i++){
-                putRegister(c[i], filename);
-            }
-        }catch(Exception e){
-            System.out.println("ERRO AO ARMAZENAR VETOR DE CLIENTES (Metodo putRegister)");
-        }
-        
-    }
 
     //adiciona um ArrayList dentro de um arquivo
     private static void putRegister(ArrayList<Cliente> c, String filename) { 
@@ -63,28 +51,6 @@ public class Intercalacao extends Cliente {
             putRegister(c.get(i), filename);
         }
     }
-
-    //ordena o vetor de clientes
-    private static Cliente[] ordenaVetor(Cliente[] clientes) {
-        try{
-            for(int i=0;i<clientes.length-1;i++){
-                Cliente menor = clientes[i];
-                for(int j=1;j<clientes.length;j++){
-                    if(clientes[i].getID()>clientes[j].getID()){
-                        clientes[i]=clientes[j];
-                        clientes[j]=menor;
-                        menor = clientes[i];
-                    }
-                }
-            }
-            return clientes;
-        }catch(Exception e){
-            System.out.println("ERRO AO ORDENAR VETOR DE CLIENTES (Metodo ordenaVetor())");
-            return null;
-        }
-        
-    }
-
     //Checa se o arquivo está ordenado
     private static boolean isInOrder(String filename){
         try{
@@ -102,10 +68,14 @@ public class Intercalacao extends Cliente {
         }
         
     }
-
-    //transfere o registro para a saida principal
-    private static void transferToMain(String filename){
-        putRegister(getAll(filename), ClienteCRUD.getLocalizacao());
+    private static boolean isInOrder(ArrayList<Cliente> clientes){
+        for(int i=0;i<clientes.size()-1;i++){
+            int j=i+1;
+            if(clientes.get(i).getID()>clientes.get(j).getID()){
+                return false;
+            }
+        }
+        return true; 
     }
 
     //deleta um arquivo
@@ -114,149 +84,90 @@ public class Intercalacao extends Cliente {
         file.delete();
     }
 
-    //junta dois arquivos temporarios em um arquivo final
-    private static void merge(String tmp1,String tmp2, String main){
-        ArrayList<Cliente>lista1 = getAll(tmp1);
-        ArrayList<Cliente>lista2 = getAll(tmp2);
-        int posA=0;
-        int posB=0;
-        for(int i=0;posA<lista1.size() || posB<lista2.size();i++){
-            int ASize = 0;
-            int BSize = 0;
-            for(int j=0;j<MAXVALUE*2;j++){    
-                if((lista1.get(posA).getID()<lista2.get(posB).getID()) || (BSize == MAXVALUE)){
-                    putRegister(lista1.get(posA), main);
-                    ASize++;
-                    posA++;
-                }else if((lista1.get(posA).getID()>lista2.get(posB).getID()) || (ASize == MAXVALUE)){
-                    putRegister(lista2.get(posB), main);
-                    BSize++;
-                    posB++;
-                }
-            }
-        }
-        if(lista1.size()>lista2.size()){
-            for(int i = posB;posB<lista2.size();i++){
-                putRegister(lista2.get(i), main);
-            }
-        }else if (lista1.size()<lista2.size()){
-            for(int i = posA;posA<lista1.size();i++){
-                putRegister(lista1.get(i), main);
-            }
-        }
-    }
-
-    //realiza a Intercalacao Balanceada a partir da segunda passada
-    private static void IntercalacaoBalanceada(String emptyFile1, String emptyFile2,ArrayList<Cliente>lista1,ArrayList<Cliente>lista2){
-        String chosenEmptyFile = emptyFile1;
-        int posA=0;
-        int posB=0;
-        boolean b = false;
-        for(int i=0;posA<lista1.size() || posB<lista2.size();i++){
-            int ASize = 0;
-            int BSize = 0;
-            for(int j=0;j<MAXVALUE*2;j++){    
-                if((lista1.get(posA).getID()<lista2.get(posB).getID()) || (BSize == MAXVALUE)){
-                    putRegister(lista1.get(posA), chosenEmptyFile);
-                    ASize++;
-                    posA++;
-                }else if((lista1.get(posA).getID()>lista2.get(posB).getID()) || (ASize == MAXVALUE)){
-                    putRegister(lista2.get(posB), chosenEmptyFile);
-                    BSize++;
-                    posB++;
-                }
-            }
-            if(b){
-                b=false;
-                chosenEmptyFile = emptyFile1;
-            }else{
-                b=true;
-                chosenEmptyFile = emptyFile2;
-            }
-        }
-        if(lista1.size()>lista2.size()){
-            for(int i = posB;posB<lista2.size();i++){
-                putRegister(lista2.get(i), chosenEmptyFile);
-            }
-        }else if (lista1.size()<lista2.size()){
-            for(int i = posA;posA<lista1.size();i++){
-                putRegister(lista1.get(i), chosenEmptyFile);
-            }
-        }
-    }
-
     //Intercalacao Balanceada Comum
-    public static void IBC()throws IOException{
-            int count = 0;    
-            String filename = "tmp1.db";
-            Cliente[] clientes = new Cliente[MAXVALUE];
-            ArrayList<Cliente> todosClientes = getAll(ClienteCRUD.getLocalizacao());
-            System.out.println(todosClientes.size());
-            boolean b = false;
-            //Primeira passada
-            for(int i=0;i<todosClientes.size();i++){
-                if(todosClientes.get(i).getID()!=-1){ //excluirá as lapides
-                    clientes[count]=todosClientes.get(i);
-                    count++;
-                    if(count==MAXVALUE && b==false){
-                        ordenaVetor(clientes);
-                        putRegister(clientes, filename);
-                        count=0;
-                        b=true;
-                        filename = "tmp2.db";
-                    }else if (count==MAXVALUE && b==true){
-                        ordenaVetor(clientes);
-                        putRegister(clientes, filename);
-                        count=0;
-                        b=false;
-                        filename = "tmp1.db";
+    public static void IBC()throws IOException{  
+        String ordem =""; 
+        String main = ClienteCRUD.getLocalizacao();
+        String filename = "tmp1.db";
+        //Cliente[] clientes = new Cliente[MAXVALUE];
+        boolean b = false;
+        while(!isInOrder(main)){
+            ArrayList<Cliente> todosClientes = getAll(main);
+            //System.out.println("Sistema chegou aqui");
+            //Distribuicao dos valores entre tmp1 e tmp2
+            for(int i=0;i<todosClientes.size()-1;i++){
+                if(b){
+                    while(todosClientes.get(i).getID() < todosClientes.get(i+1).getID() && i<todosClientes.size()-2){
+                        putRegister(todosClientes.get(i), filename);
+                        i++;
                     }
+                    //System.out.println("b=false");
+                    b=false;
+                    filename = "tmp1.db";
+                    putRegister(todosClientes.get(i), filename);
+                }else{
+                    while(todosClientes.get(i).getID() < todosClientes.get(i+1).getID() && i<todosClientes.size()-2){
+                        putRegister(todosClientes.get(i), filename);
+                        i++;
+                    }
+                    //System.out.println("b=true");
+                    b=true;
+                    filename = "tmp2.db";
+                    putRegister(todosClientes.get(i), filename);
                 }
             }
-            deletaArquivo(ClienteCRUD.getLocalizacao()); //Deleta o arquivo main para que possamos sobrescreve-lo
-            //checa se o arquivo está em ordem
-            if(todosClientes.size()<MAXVALUE && isInOrder("tmp1.db")){
-                transferToMain("tmp1.db");
+            System.out.println("Chegou aqui!");
+            //adiciona o ultimo elemento no ultimo tmp adicionado
+            putRegister(todosClientes.get(todosClientes.size()-1),filename);
+            System.out.println("Fim primeira parte!");
+            //zera o arquivo principal
+            deletaArquivo("clientes.db");
+            
+            //retorna os dois tmps ao arquivo principal zerado
+            ArrayList<Cliente> tmp1 = getAll("tmp1.db");
+            ArrayList<Cliente> tmp2 = getAll("tmp2.db");
+            //checa se o arquivo já está devidamente ordenado
+            if (isInOrder(tmp1) && tmp1.size()==todosClientes.size()){
+                putRegister(tmp1, main);
+                deletaArquivo("tmp1.db");
+                deletaArquivo("tmp2.db");
                 return;
             }
-            //ira fazer as intercalacoes entre arquivos ate tudo estiver devidamente ordenado
-            filename = "tmp1.db";
-            String filename2 = "tmp2.db";
-            String emptyFile1 = "tmp3.db";
-            String emptyFile2 = "tmp4.db";
-            boolean a=false;
-            while(isInOrder(filename) && isInOrder(filename2)){
-                ArrayList<Cliente>lista1 = getAll(filename);
-                ArrayList<Cliente>lista2 = getAll(filename2);
-                IntercalacaoBalanceada(emptyFile1, emptyFile2, lista1, lista2);
-                if(a){
-                    a=false;
-                    filename = "tmp1.db";
-                    filename2 = "tmp2.db";
-                    deletaArquivo("tmp3.db");
-                    deletaArquivo("tmp4.db"); 
-                    emptyFile1 = "tmp3.db";
-                    emptyFile2 = "tmp4.db";
+            System.out.println("Sistema chegou aqui");
+            int pos1=0;
+            int pos2=0;
+            for(int i=0;i<tmp1.size() || i<tmp2.size();i++){
+                if((tmp1.get(pos1).getID()<tmp2.get(pos2).getID())){
+                    System.out.println("Adiciona de tmp1");
+                    putRegister(tmp1.get(pos1), main);
+                    pos1++;
                 }else{
-                    a=true;
-                    filename = "tmp3.db";
-                    filename2 = "tmp4.db";
-                    deletaArquivo("tmp1.db");
-                    deletaArquivo("tmp2.db"); 
-                    emptyFile1 = "tmp1.db";
-                    emptyFile2 = "tmp2.db";
+                    System.out.println("Adiciona de tmp2");
+                    putRegister(tmp2.get(pos2), main);
+                    pos2++;
                 }
-
+               
             }
-            //Junta os arquivos separados em um arquivo final
-            merge(filename,filename2,ClienteCRUD.getLocalizacao());
-
-            //deleta os arquivos temporarios
+            //se acabar todos os registros do tmp1, os do tmp2 serao adicionados sequencialmente
+            if(tmp1.size()==pos1 && tmp2.size()!=pos2){
+                for(int i = pos2;i<tmp2.size();i++){
+                    ordem += tmp2.get(i).getID() + ", ";
+                    putRegister(tmp2.get(i), main);
+                }
+            //se acabar todos os registros do tmp2, os do tmp1 serao adicionados sequencialmente
+            }else if (tmp1.size()!=pos1 && tmp2.size()==pos2){
+                for(int i = pos1;i<tmp1.size();i++){
+                    ordem += tmp1.get(i).getID() + ", ";
+                    putRegister(tmp1.get(i), main);
+                }
+            }
+            System.out.println("Ordem: "+ordem);
+            //zera os arquivos tmp
             deletaArquivo("tmp1.db");
             deletaArquivo("tmp2.db");
-            deletaArquivo("tmp3.db");
-            deletaArquivo("tmp4.db");
-
+            //zera o registro de clientes
+            todosClientes = new ArrayList<Cliente>();
+        }
         
     }
     
