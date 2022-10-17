@@ -177,5 +177,6 @@ public class Main {
             }
         }
         sc.close(); 
+        try{Intercalacao.IBC();}catch(Exception e){System.out.println(e); System.out.println(e.getStackTrace());}
     }
 }
